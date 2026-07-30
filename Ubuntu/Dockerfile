@@ -70,6 +70,9 @@ RUN npm install --global @anthropic-ai/claude-code \
 
 USER root
 
+# sshd supplies its own login PATH; expose Claude Code in a system PATH directory.
+RUN ln -s /home/${USERNAME}/.npm-global/bin/claude /usr/local/bin/claude
+
 # Key-only SSH: mount an authorized_keys file at runtime. Do not bake credentials into the image.
 RUN rm -f /etc/ssh/ssh_host_* \
     && printf '%s\n' \
