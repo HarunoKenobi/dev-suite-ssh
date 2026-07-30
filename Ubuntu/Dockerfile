@@ -53,6 +53,8 @@ RUN mkdir -p /etc/apt/keyrings \
 # Do not force UID/GID 1000: Ubuntu base images can already reserve that GID.
 RUN groupadd "${USERNAME}" \
     && useradd --gid "${USERNAME}" --create-home --shell /bin/bash "${USERNAME}" \
+    # Unlock the account for public-key SSH; PasswordAuthentication remains disabled in sshd.
+    && passwd --delete "${USERNAME}" \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}" \
     && chmod 0440 "/etc/sudoers.d/${USERNAME}" \
     && install -d -m 0700 -o "${USERNAME}" -g "${USERNAME}" "/home/${USERNAME}/.ssh" \

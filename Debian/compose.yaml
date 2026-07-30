@@ -18,7 +18,7 @@ services:
         target: /home/dev/workspace
       - type: bind
         source: ${SSH_PUBLIC_KEY_PATH:-${USERPROFILE}/.ssh/id_ed25519.pub}
-        target: /home/dev/.ssh/authorized_keys
+        target: /tmp/dev-authorized_keys.pub
         read_only: true
       - claude-config:/home/dev/.claude
       - vscode-server:/home/dev/.vscode-server
@@ -30,6 +30,8 @@ services:
       - |
         install -d -o dev -g dev /home/dev/.claude /home/dev/.vscode-server
         chown -R dev:dev /home/dev/.claude /home/dev/.vscode-server
+        install -d -m 0700 -o dev -g dev /home/dev/.ssh
+        install -m 0600 -o dev -g dev /tmp/dev-authorized_keys.pub /home/dev/.ssh/authorized_keys
         ssh-keygen -A
         exec /usr/sbin/sshd -D -e
 

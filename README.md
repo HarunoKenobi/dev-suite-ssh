@@ -145,5 +145,6 @@ docker buildx build --platform linux/amd64 --file Debian/Dockerfile --tag haruno
 ## Segurança
 
 - As imagens não aceitam senha nem login SSH como `root`.
+- A chave pública é copiada para o container na inicialização com permissões restritas; reinicie o container após trocar a chave no host.
 - Nunca adicione tokens, arquivos privados ou a chave privada SSH à imagem ou ao repositório.
 - Não exponha as portas `2222` e `2223` em rede pública sem firewall, controle de acesso e uma revisão de segurança.
