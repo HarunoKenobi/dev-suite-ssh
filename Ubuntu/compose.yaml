@@ -1,0 +1,40 @@
+services:
+  devbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ubuntu-dev-ssh:local
+    container_name: ubuntu-devbox
+    init: true
+    restart: unless-stopped
+    ports:
+      - "2222:22"
+    environment:
+      TZ: America/Sao_Paulo
+    volumes:
+      # Seu código fica no diretório ./workspace ao lado deste compose.yaml.
+      - type: bind
+        source: ./workspace
+        target: /home/dev/workspace
+      # Troque SSH_PUBLIC_KEY_PATH se a sua chave pública tiver outro nome/local.
+      - type: bind
+        source: ${SSH_PUBLIC_KEY_PATH:-${USERPROFILE}/.ssh/id_ed25519.pub}
+        target: /home/dev/.ssh/authorized_keys
+        read_only: true
+      # Preserva login do Claude Code e extensões do VS Code entre recriações.
+      - claude-config:/home/dev/.claude
+      - vscode-server:/home/dev/.vscode-server
+    cpus: 4
+    mem_limit: 3g
+    command:
+      - /bin/bash
+      - -lc
+      - |
+        install -d -o dev -g dev /home/dev/.claude /home/dev/.vscode-server
+        chown -R dev:dev /home/dev/.claude /home/dev/.vscode-server
+        ssh-keygen -A
+        exec /usr/sbin/sshd -D -e
+
+volumes:
+  claude-config:
+  vscode-server:

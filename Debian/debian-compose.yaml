@@ -1,0 +1,38 @@
+services:
+  devbox:
+    build:
+      context: .
+      dockerfile: debian.Dockerfile
+    image: harunokenobi/debian-dev-ssh:local
+    container_name: debian-devbox
+    init: true
+    restart: unless-stopped
+    ports:
+      # A porta 2223 evita conflito com o ambiente Ubuntu (2222), se ambos estiverem ativos.
+      - "2223:22"
+    environment:
+      TZ: America/Sao_Paulo
+    volumes:
+      - type: bind
+        source: ./workspace
+        target: /home/dev/workspace
+      - type: bind
+        source: ${SSH_PUBLIC_KEY_PATH:-${USERPROFILE}/.ssh/id_ed25519.pub}
+        target: /home/dev/.ssh/authorized_keys
+        read_only: true
+      - claude-config:/home/dev/.claude
+      - vscode-server:/home/dev/.vscode-server
+    cpus: 4
+    mem_limit: 8g
+    command:
+      - /bin/bash
+      - -lc
+      - |
+        install -d -o dev -g dev /home/dev/.claude /home/dev/.vscode-server
+        chown -R dev:dev /home/dev/.claude /home/dev/.vscode-server
+        ssh-keygen -A
+        exec /usr/sbin/sshd -D -e
+
+volumes:
+  claude-config:
+  vscode-server:
