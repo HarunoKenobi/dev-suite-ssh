@@ -2,7 +2,7 @@ services:
   devbox:
     build:
       context: .
-      dockerfile: debian.Dockerfile
+      dockerfile: Dockerfile
     image: harunokenobi/debian-dev-ssh:local
     container_name: debian-devbox
     init: true
