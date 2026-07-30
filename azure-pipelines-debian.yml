@@ -1,0 +1,62 @@
+# Builds and publishes only the Debian development image to Docker Hub.
+# For Azure Repos, configure this pipeline as a required build-validation
+# policy on main; YAML `pr` triggers are not supported by Azure Repos Git.
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - Debian/**
+      - azure-pipelines-debian.yml
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  # Create a Docker Registry service connection with this name in Azure DevOps.
+  dockerRegistryServiceConnection: dockerHub
+  imageName: harunokenobi/debian-dev-ssh
+  context: Debian
+  platforms: linux/amd64
+
+steps:
+  - checkout: self
+
+  - task: Docker@2
+    displayName: Log in to Docker Hub
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    inputs:
+      command: login
+      containerRegistry: $(dockerRegistryServiceConnection)
+
+  - script: |
+      set -euo pipefail
+      docker run --privileged --rm tonistiigi/binfmt --install all
+      docker buildx create --name multiarch --use --driver docker-container
+      docker buildx inspect --bootstrap
+    displayName: Configure Buildx and ARM64 emulation
+
+  - script: |
+      set -euo pipefail
+
+      tags="--tag $(imageName):$(Build.SourceVersion)"
+      output=""
+
+      if [ "$(Build.SourceBranch)" = "refs/heads/main" ] && [ "$(Build.Reason)" != "PullRequest" ]; then
+        tags="$tags --tag $(imageName):latest"
+        output="--push"
+      fi
+
+      docker buildx build \
+        --platform "$(platforms)" \
+        --file "$(context)/Dockerfile" \
+        --label "org.opencontainers.image.revision=$(Build.SourceVersion)" \
+        --label "org.opencontainers.image.source=$(Build.Repository.Uri)" \
+        --label "org.opencontainers.image.created=$(Build.QueuedTime)" \
+        $tags \
+        $output \
+        "$(context)"
+    displayName: Build and publish Debian image
