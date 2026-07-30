@@ -23,7 +23,7 @@ services:
       - claude-config:/home/dev/.claude
       - vscode-server:/home/dev/.vscode-server
     cpus: 4
-    mem_limit: 8g
+    mem_limit: 3g
     command:
       - /bin/bash
       - -lc

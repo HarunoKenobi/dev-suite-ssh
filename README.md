@@ -5,7 +5,7 @@ Imagens de desenvolvimento via SSH, preparadas para VS Code Remote - SSH, Claude
 | Ambiente | Base | SSH local | Memória padrão |
 | --- | --- | --- | --- |
 | `Ubuntu/` | Ubuntu 24.04 | `2222` | 3 GB |
-| `Debian/` | Debian 12 Slim | `2223` | 8 GB |
+| `Debian/` | Debian 12 Slim | `2223` | 3 GB |
 
 Para uma imagem menor, prefira Debian. Ubuntu é útil se sua aplicação ou ferramentas já esperam essa distribuição.
 
@@ -127,13 +127,13 @@ docker login
 Na raiz do repositório, publique a imagem Ubuntu para `linux/amd64` e `linux/arm64`:
 
 ```powershell
-docker buildx build --platform linux/amd64,linux/arm64 --file Ubuntu/Dockerfile --tag harunokenobi/ubuntu-dev-ssh:latest --push Ubuntu
+docker buildx build --platform linux/amd64 --file Ubuntu/Dockerfile --tag harunokenobi/ubuntu-dev-ssh:latest --push Ubuntu
 ```
 
 Para publicar a variante Debian:
 
 ```powershell
-docker buildx build --platform linux/amd64,linux/arm64 --file Debian/Dockerfile --tag harunokenobi/debian-dev-ssh:latest --push Debian
+docker buildx build --platform linux/amd64 --file Debian/Dockerfile --tag harunokenobi/debian-dev-ssh:latest --push Debian
 ```
 
 `--push` é necessário para publicar uma imagem multi-arquitetura diretamente com Buildx. Para testar localmente no Docker Desktop antes de publicar, use a arquitetura local e `--load`:
